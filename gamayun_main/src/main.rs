@@ -20,8 +20,7 @@ async fn main() -> Result<()> {
 
     let (shutdown_token, shutdown_future) = create_canceled_token();
     let http_server_future = run_actix_server(shutdown_token.clone());
-    let grpc_server_future =
-        run_grpc_server(shutdown_token.clone(), app_context.mongo_client.clone());
+    let grpc_server_future = run_grpc_server(shutdown_token.clone(), app_context.clone());
 
     // Run all futures concurrently
     tokio::select! {

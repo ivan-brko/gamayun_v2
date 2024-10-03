@@ -13,8 +13,8 @@ pub enum OnDuplicateEntry {
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct DuplicateEntryPolicy {
-    unique_ids: Vec<String>,
-    on_duplicate_entry: OnDuplicateEntry,
+    pub unique_ids: Vec<String>,
+    pub on_duplicate_entry: OnDuplicateEntry,
 }
 
 #[derive(Debug, Deserialize, Clone)]

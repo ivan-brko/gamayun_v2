@@ -7,18 +7,18 @@ use std::future::Future;
 use std::process::Command;
 use tracing::{error, info};
 
-pub fn schedule_jobs_from_config(scheduler: Scheduler<chrono::Utc>) -> Result<()> {
+pub fn schedule_jobs_from_config(scheduler: Scheduler<Utc>) -> Result<Vec<JobConfig>> {
     let config_root = env::var("GAMAYUN_CONFIGURATION_ROOT")
         .context("GAMAYUN_CONFIGURATION_ROOT environment variable is not set")?;
 
     let job_configs = JobConfig::load_configs_from_directory(&config_root)
         .context("Failed to load job configurations")?;
 
-    for job_config in job_configs {
-        schedule_single_job(scheduler.clone(), job_config);
+    for job_config in &job_configs {
+        schedule_single_job(scheduler.clone(), job_config.clone());
     }
 
-    Ok(())
+    Ok(job_configs)
 }
 
 fn schedule_single_job(scheduler: Scheduler<Utc>, job_config: JobConfig) {

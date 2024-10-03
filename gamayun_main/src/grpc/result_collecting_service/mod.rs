@@ -1,3 +1,8 @@
+mod common_utils;
+mod impl_result_maps_only;
+
+use crate::config::job_config::JobConfig;
+use crate::init::AppContext;
 use protos::gamayun::result_server::Result;
 use protos::gamayun::{
     EmptyResponse, JobError, JobResultWithMapAndStrings, JobResultWithMapOnly,
@@ -7,12 +12,12 @@ use tonic::{Request, Response, Status};
 use tracing::{error, info};
 
 pub struct ResultCollectingService {
-    mongo_client: mongodb::Client,
+    app_context: AppContext,
 }
 
 impl ResultCollectingService {
-    pub fn new(mongo_client: mongodb::Client) -> Self {
-        Self { mongo_client }
+    pub fn new(app_context: AppContext) -> Self {
+        Self { app_context }
     }
 }
 
@@ -33,7 +38,8 @@ impl Result for ResultCollectingService {
     ) -> std::result::Result<Response<EmptyResponse>, Status> {
         let job_result = request.into_inner();
         info!("Received map only result: {:?}", job_result);
-        Ok(Response::new(EmptyResponse {}))
+
+        self.handle_result_map_only(job_result).await
     }
 
     async fn report_result_with_map_and_strings(

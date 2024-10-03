@@ -1,4 +1,5 @@
 use crate::grpc::result_collecting_service::ResultCollectingService;
+use crate::init::AppContext;
 use anyhow::{Context, Result};
 use protos::gamayun::result_server::ResultServer;
 use std::env;
@@ -10,7 +11,7 @@ mod result_collecting_service;
 
 pub async fn run_grpc_server(
     shutdown_token: CancellationToken,
-    mongo_client: mongodb::Client,
+    app_context: AppContext,
 ) -> Result<()> {
     // Read gRPC address from environment variable or use default
     let addr = env::var("GAMAYUN_GRPC_ADDR")
@@ -18,7 +19,7 @@ pub async fn run_grpc_server(
         .parse()
         .context("Failed to parse GAMAYUN_GRPC_ADDR")?;
 
-    let result_service = ResultCollectingService::new(mongo_client);
+    let result_service = ResultCollectingService::new(app_context);
 
     info!("ResultService listening on {}", addr);
 
