@@ -5,14 +5,14 @@ use std::io::Read;
 use std::path::Path;
 
 #[derive(Debug, Deserialize, Clone)]
-enum OnDuplicateEntry {
+pub enum OnDuplicateEntry {
     IgnoreNew,
     Overwrite,
     TrackChanges,
 }
 
 #[derive(Debug, Deserialize, Clone)]
-struct DuplicateEntryPolicy {
+pub struct DuplicateEntryPolicy {
     unique_ids: Vec<String>,
     on_duplicate_entry: OnDuplicateEntry,
 }

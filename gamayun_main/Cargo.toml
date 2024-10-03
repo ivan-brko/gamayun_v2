@@ -9,6 +9,7 @@ actix-web = "4.9.0"
 
 # async
 tokio = { version = "1.38.1", features = ["full"] }
+tokio-util = "0.7.12"
 futures = "0.3.30"
 
 # tracing
@@ -28,13 +29,15 @@ opentelemetry-otlp = "0.25.0"
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.8.19"
 
-#other
-anyhow = "1.0"
-
-
 #scheduling
 grizzly_scheduler = "0.1.0"
 chrono = "0.4.38"
+
+## grpc
+tonic = { version = "0.12.3", features = ["transport"] }
+
+#other
+anyhow = "1.0"
 
 # local dependencies
 protos = { path = "../protos" }
