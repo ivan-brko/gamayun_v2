@@ -1,25 +1,4 @@
-[package]
-name = "gamayun"
-version = "0.1.0"
-edition = "2021"
+[workspace]
+members = ["gamayun_main", "protos"]
 
-[dependencies]
-#actix
-actix-web = "4.9.0"
-
-# async
-tokio = { version = "1.38.1", features = ["full"] }
-futures = "0.3.30"
-
-# tracing
-tracing = "0.1.40"
-tracing-subscriber = { version = "0.3.18", features = [
-    "fmt",
-    "env-filter",
-    "json",
-] }
-tracing-actix-web = "0.7.13"
-tracing-opentelemetry = "0.26.0"
-opentelemetry_sdk = { version = "0.25.0", features = ["rt-tokio"] }
-opentelemetry = "0.25.0"
-opentelemetry-otlp = "0.25.0"
+resolver = "2"
