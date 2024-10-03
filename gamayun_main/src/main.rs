@@ -1,27 +1,27 @@
-use std::future::Future;
-use tracing::info;
-use anyhow::Result;
-use tokio::signal;
-use tokio_util::sync::CancellationToken;
 use crate::grpc::run_grpc_server;
 use crate::http::run_actix_server;
+use anyhow::Result;
+use std::future::Future;
+use tokio::signal;
+use tokio_util::sync::CancellationToken;
+use tracing::info;
 
 mod config;
-mod init;
-mod job_scheduling;
 mod grpc;
 mod http;
-
+mod init;
+mod job_scheduling;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    init::initialize();
+    let app_context = init::initialize().await;
 
     info!("Starting the web server");
 
     let (shutdown_token, shutdown_future) = create_canceled_token();
     let http_server_future = run_actix_server(shutdown_token.clone());
-    let grpc_server_future = run_grpc_server(shutdown_token.clone());
+    let grpc_server_future =
+        run_grpc_server(shutdown_token.clone(), app_context.mongo_client.clone());
 
     // Run all futures concurrently
     tokio::select! {
@@ -43,7 +43,7 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-fn create_canceled_token() -> (CancellationToken, impl Future<Output=()> + Sized) {
+fn create_canceled_token() -> (CancellationToken, impl Future<Output = ()> + Sized) {
     let shutdown_token = CancellationToken::new();
     let cloned_token = shutdown_token.clone();
 

@@ -1,10 +1,10 @@
 use actix_web::{get, web, App, HttpServer, Responder};
-use tracing_actix_web::TracingLogger;
 use anyhow::{Context, Result};
-use tokio_util::sync::CancellationToken;
-use tracing::info;
 use std::env;
 use std::net::ToSocketAddrs;
+use tokio_util::sync::CancellationToken;
+use tracing::info;
+use tracing_actix_web::TracingLogger;
 
 mod request_handling_logic;
 
@@ -28,11 +28,7 @@ pub async fn run_actix_server(shutdown_token: CancellationToken) -> Result<()> {
 
     info!("Starting Actix Web server on {}:{}", host, port);
 
-    let server = HttpServer::new(|| {
-        App::new()
-            .wrap(TracingLogger::default())
-            .service(greet)
-    })
+    let server = HttpServer::new(|| App::new().wrap(TracingLogger::default()).service(greet))
         .bind(addr)
         .context("Failed to bind Actix Web server")?;
 

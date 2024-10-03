@@ -1,10 +1,10 @@
 use crate::config::job_config::JobConfig;
 use anyhow::{Context, Result};
+use chrono::Utc;
 use grizzly_scheduler::scheduler::Scheduler;
 use std::env;
 use std::future::Future;
 use std::process::Command;
-use chrono::Utc;
 use tracing::{error, info};
 
 pub fn schedule_jobs_from_config(scheduler: Scheduler<chrono::Utc>) -> Result<()> {
@@ -36,20 +36,26 @@ fn schedule_single_job(scheduler: Scheduler<Utc>, job_config: JobConfig) {
             job_config
                 .random_trigger_offset_seconds
                 .map(|offset| chrono::Duration::seconds(offset)),
-            move || run_single_job(path_to_executable.clone(), job_name.clone(), arguments.clone()),
+            move || {
+                run_single_job(
+                    path_to_executable.clone(),
+                    job_name.clone(),
+                    arguments.clone(),
+                )
+            },
         )
         .expect("Failed to schedule job");
 }
 
-fn run_single_job(path_to_executable: String, job_name: String, arguments: Vec<String>) -> impl Future<Output=()> + Sized {
+fn run_single_job(
+    path_to_executable: String,
+    job_name: String,
+    arguments: Vec<String>,
+) -> impl Future<Output = ()> + Sized {
     info!("Executing job: {}", &job_name);
 
     // Start the OS task
-    match Command::new(&path_to_executable)
-        .args(arguments)
-        .spawn()
-    {
-        
+    match Command::new(&path_to_executable).args(arguments).spawn() {
         Ok(child) => {
             info!("Job {} started with PID {}", &job_name, child.id());
 
@@ -74,9 +80,8 @@ fn run_single_job(path_to_executable: String, job_name: String, arguments: Vec<S
         Err(e) => {
             error!("Failed to start job {}: {:?}", job_name, e);
         }
-
     }
 
     // Return an empty future
-    async {  }
+    async {}
 }
