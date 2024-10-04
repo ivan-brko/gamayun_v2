@@ -11,6 +11,7 @@ mod grpc;
 mod http;
 mod init;
 mod job_scheduling;
+mod notification;
 
 #[tokio::main]
 async fn main() -> Result<()> {
