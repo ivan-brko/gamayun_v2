@@ -9,23 +9,10 @@ package gamayun;
 
 // The result service definition.
 service Result{
-  // Reports the string only result to Gamayun
-  rpc ReportResultWithRawStringsOnly (JobResultWithRawStringsOnly) returns (EmptyResponse) {}
-
   // Reports the map only result to Gamayun
   rpc ReportResultWithMapOnly (JobResultWithMapOnly) returns (EmptyResponse) {}
-
-  // Reports the result with map and strings to Gamayun
-  rpc ReportResultWithMapAndStrings (JobResultWithMapAndStrings) returns (EmptyResponse) {}
-
   // Reports an error to Gamayun
   rpc ReportError (JobError) returns (EmptyResponse) {}
-}
-
-// Result containing jobName and string-only results
-message JobResultWithRawStringsOnly {
-  string name = 1;
-  repeated string results = 2;
 }
 
 //as maps cannot be repeated, we need to separate a map into a message (which can be repeated)
@@ -36,19 +23,14 @@ message MapResult{
 // Result containing jobName and map-only results
 message JobResultWithMapOnly {
   string name = 1;
-  repeated MapResult results = 2;
-}
-
-// Result containing jobName and strings and map results
-message JobResultWithMapAndStrings {
-  string name = 1;
-  repeated MapResult mapResults = 2;
-  repeated string stringResults = 3;
+  string runId = 2;
+  repeated MapResult results = 3;
 }
 
 message JobError {
   string name = 1;
-  string error = 2;
+  string runId = 2;
+  string error = 3;
 }
 
 // The empty response

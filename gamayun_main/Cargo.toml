@@ -45,3 +45,4 @@ dotenv = "0.15.0"
 
 # local dependencies
 protos = { path = "../protos" }
+tracing-futures = "0.2.5"
