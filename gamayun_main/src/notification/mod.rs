@@ -1,7 +1,7 @@
 mod composite_notification_sender;
+mod mail;
 
 use async_trait::async_trait;
-use std::sync::Arc;
 
 /// Defines a trait for sending notifications asynchronously.
 #[async_trait]
