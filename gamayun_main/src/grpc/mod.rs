@@ -1,7 +1,7 @@
 use crate::grpc::result_collecting_service::ResultCollectingService;
 use crate::init::AppContext;
 use anyhow::{Context, Result};
-use protos::gamayun::result_server::ResultServer;
+use protos::gamayun::result_reporting_service_server::ResultReportingServiceServer;
 use std::env;
 use tokio_util::sync::CancellationToken;
 use tonic::transport::Server;
@@ -24,7 +24,7 @@ pub async fn run_grpc_server(
     info!("ResultService listening on {}", addr);
 
     Server::builder()
-        .add_service(ResultServer::new(result_service))
+        .add_service(ResultReportingServiceServer::new(result_service))
         .serve_with_shutdown(addr, shutdown_token.cancelled())
         .await
         .context("gRPC server error")?;

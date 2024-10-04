@@ -1,16 +1,11 @@
 syntax = "proto3";
 
-option java_multiple_files = true;
-option java_package = "org.gamayun.proto";
-option java_outer_classname = "GamayunResultReporter";
-option objc_class_prefix = "GMY";
-
 package gamayun;
 
 // The result service definition.
-service Result{
+service ResultReportingService{
   // Reports the map only result to Gamayun
-  rpc ReportResultWithMapOnly (JobResultWithMapOnly) returns (EmptyResponse) {}
+  rpc ReportResultWithMapOnly (JobResult) returns (EmptyResponse) {}
   // Reports an error to Gamayun
   rpc ReportError (JobError) returns (EmptyResponse) {}
 }
@@ -21,7 +16,7 @@ message MapResult{
 }
 
 // Result containing jobName and map-only results
-message JobResultWithMapOnly {
+message JobResult {
   string name = 1;
   string runId = 2;
   repeated MapResult results = 3;

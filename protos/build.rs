@@ -5,7 +5,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn handle_protos() -> Result<(), Box<dyn std::error::Error>> {
     let include_paths: [&str; 1] = ["proto/"];
 
-    let protos = ["proto/gamayun_result.proto"];
+    let protos = ["proto/result_reporting_service.proto"];
 
     let config = tonic_build::configure()
         .type_attribute(".", "#[derive(serde::Serialize, serde::Deserialize)]")

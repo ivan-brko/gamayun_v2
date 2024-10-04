@@ -3,7 +3,7 @@ use crate::grpc::result_collecting_service::ResultCollectingService;
 
 use mongodb::bson::{doc, Bson, DateTime as BsonDateTime, Document};
 use mongodb::{error::Error as MongoError, Collection};
-use protos::gamayun::{EmptyResponse, JobResultWithMapOnly, MapResult};
+use protos::gamayun::{EmptyResponse, JobResult, MapResult};
 use std::collections::HashMap;
 use tonic::{Response, Status};
 use tracing::{error, info};
@@ -22,7 +22,7 @@ impl ResultCollectingService {
     /// or a `Status` error if processing or storing fails.
     pub async fn handle_result_map_only(
         &self,
-        job_result: JobResultWithMapOnly,
+        job_result: JobResult,
     ) -> Result<Response<EmptyResponse>, Status> {
         // Extract job name and results
         let job_name = job_result.name;
