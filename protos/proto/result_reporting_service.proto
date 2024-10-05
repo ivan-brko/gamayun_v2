@@ -4,8 +4,8 @@ package gamayun;
 
 // The result service definition.
 service ResultReportingService{
-  // Reports the map only result to Gamayun
-  rpc ReportResultWithMapOnly (JobResult) returns (EmptyResponse) {}
+  // Reports the result to Gamayun
+  rpc ReportResult (JobResult) returns (EmptyResponse) {}
   // Reports an error to Gamayun
   rpc ReportError (JobError) returns (EmptyResponse) {}
 }

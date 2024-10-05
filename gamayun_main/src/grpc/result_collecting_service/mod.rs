@@ -1,5 +1,6 @@
 mod common_utils;
-mod impl_result_maps_only;
+mod impl_error_handling;
+mod impl_result_handling;
 
 use crate::init::AppContext;
 use protos::gamayun::result_reporting_service_server::ResultReportingService;
@@ -20,15 +21,15 @@ impl ResultCollectingService {
 
 #[tonic::async_trait]
 impl ResultReportingService for ResultCollectingService {
-    async fn report_result_with_map_only(
+    async fn report_result(
         &self,
         request: Request<JobResult>,
-    ) -> std::result::Result<Response<EmptyResponse>, Status> {
+    ) -> Result<Response<EmptyResponse>, Status> {
         let job_result = request.into_inner();
 
         // Create a span with `name` and `runId` added to the tracing context
         let span = tracing::info_span!(
-            "report_result_with_map_only",
+            "report_result",
             name = %job_result.name,
             run_id = %job_result.run_id
         );
@@ -37,16 +38,24 @@ impl ResultReportingService for ResultCollectingService {
         info!(parent: &span, "Received map only result: {:?}", job_result);
 
         // Instrument the future to use the span for subsequent logs
-        self.handle_result_map_only(job_result)
-            .instrument(span)
-            .await
+        self.handle_result(job_result).instrument(span).await
     }
     async fn report_error(
         &self,
         request: Request<JobError>,
-    ) -> std::result::Result<Response<EmptyResponse>, Status> {
+    ) -> Result<Response<EmptyResponse>, Status> {
         let job_error = request.into_inner();
-        error!("Received job error: {:?}", job_error);
-        Ok(Response::new(EmptyResponse {}))
+        // Create a span with `name` and `runId` added to the tracing context
+        let span = tracing::info_span!(
+            "report_error",
+            name = %job_error.name,
+            run_id = %job_error.run_id
+        );
+
+        // Log that we received the result with the span context
+        info!(parent: &span, "Received map only result: {:?}", job_error);
+
+        // Instrument the future to use the span for subsequent logs
+        self.handle_error(job_error).instrument(span).await
     }
 }

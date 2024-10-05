@@ -2,6 +2,7 @@ use crate::notification::NotificationSender;
 use async_trait::async_trait;
 use reqwest::Client;
 use std::env;
+use tracing::instrument;
 
 /// Configuration struct for SendGrid.
 pub struct SendGridConfiguration {
@@ -35,6 +36,7 @@ impl SendGridNotificationSender {
 
 #[async_trait]
 impl NotificationSender for SendGridNotificationSender {
+    #[instrument(skip(self, message_contents))]
     async fn notify(&self, message_title: String, message_contents: String) {
         let url = "https://api.sendgrid.com/v3/mail/send";
 

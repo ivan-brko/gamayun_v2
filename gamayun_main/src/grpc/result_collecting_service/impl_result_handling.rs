@@ -6,7 +6,7 @@ use mongodb::{error::Error as MongoError, Collection};
 use protos::gamayun::{EmptyResponse, JobResult, MapResult};
 use std::collections::HashMap;
 use tonic::{Response, Status};
-use tracing::{error, info};
+use tracing::{error, info, instrument};
 
 impl ResultCollectingService {
     /// Processes results for a job that contains map-only data and handles storing them
@@ -20,7 +20,8 @@ impl ResultCollectingService {
     ///
     /// `Result<Response<EmptyResponse>, Status>` - Returns an empty response on success,
     /// or a `Status` error if processing or storing fails.
-    pub async fn handle_result_map_only(
+    #[instrument(skip(self))]
+    pub async fn handle_result(
         &self,
         job_result: JobResult,
     ) -> Result<Response<EmptyResponse>, Status> {
@@ -80,6 +81,7 @@ impl ResultCollectingService {
     /// # Returns
     ///
     /// `Result<(), Status>` - Returns `Ok(())` on success or a `Status` error if processing fails.
+    #[instrument(skip(collection, duplicate_policy, tags, map_result))]
     async fn handle_single_result(
         job_name: &String,
         collection: &Collection<Document>,
@@ -141,6 +143,7 @@ impl ResultCollectingService {
     ///
     /// `Result<(), MongoError>` - Returns `Ok(())` on successful storage or a `MongoError`
     /// if any MongoDB operation fails.
+    #[instrument(skip(collection, duplicate_policy, doc, filter))]
     async fn store_based_on_duplicate_policy(
         job_name: &String,
         collection: &Collection<Document>,
@@ -175,6 +178,7 @@ impl ResultCollectingService {
     ///
     /// `Result<(), MongoError>` - Returns `Ok(())` on successful storage or a `MongoError`
     /// if a MongoDB operation fails.
+    #[instrument(skip(collection, doc, filter))]
     async fn handle_ignore_new_policy(
         job_name: &String,
         collection: &Collection<Document>,
@@ -213,6 +217,7 @@ impl ResultCollectingService {
     ///
     /// `Result<(), MongoError>` - Returns `Ok(())` on successful storage or a `MongoError`
     /// if a MongoDB operation fails.
+    #[instrument(skip(collection, doc, filter))]
     async fn handle_overwrite_policy(
         job_name: &String,
         collection: &Collection<Document>,
@@ -249,6 +254,7 @@ impl ResultCollectingService {
     ///
     /// `Result<(), MongoError>` - Returns `Ok(())` on successful storage or a `MongoError`
     /// if a MongoDB operation fails.
+    #[instrument(skip(collection, doc, filter))]
     async fn handle_track_changes_policy(
         job_name: &String,
         collection: &Collection<Document>,
