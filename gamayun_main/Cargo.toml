@@ -32,7 +32,7 @@ serde = { version = "1.0", features = ["derive"] }
 toml = "0.8.19"
 
 #scheduling
-grizzly_scheduler = "0.1.0"
+grizzly_scheduler = "0.2.0"
 chrono = "0.4.38"
 
 # grpc
@@ -50,3 +50,4 @@ protos = { path = "../protos" }
 tracing-futures = "0.2.5"
 reqwest = { version = "0.12.8", features = ["json"] }
 serde_json = "1.0.128"
+uuid = { version = "1.10.0", features = ["v4"] }

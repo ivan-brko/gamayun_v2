@@ -38,7 +38,7 @@ pub struct JobConfig {
 
     /// How long should the system wait for results of the job before giving up.
     #[serde(default)]
-    pub result_wait_timeout_millis: Option<u64>,
+    pub result_wait_timeout_millis: Option<i64>,
 
     /// Random trigger offset in seconds.
     #[serde(default)]

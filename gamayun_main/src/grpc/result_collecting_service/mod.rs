@@ -6,7 +6,6 @@ use crate::init::AppContext;
 use protos::gamayun::result_reporting_service_server::ResultReportingService;
 use protos::gamayun::{EmptyResponse, JobError, JobResult};
 use tonic::{Request, Response, Status};
-use tracing::{error, info};
 use tracing_futures::Instrument;
 
 pub struct ResultCollectingService {
@@ -34,9 +33,6 @@ impl ResultReportingService for ResultCollectingService {
             run_id = %job_result.run_id
         );
 
-        // Log that we received the result with the span context
-        info!(parent: &span, "Received map only result: {:?}", job_result);
-
         // Instrument the future to use the span for subsequent logs
         self.handle_result(job_result).instrument(span).await
     }
@@ -51,9 +47,6 @@ impl ResultReportingService for ResultCollectingService {
             name = %job_error.name,
             run_id = %job_error.run_id
         );
-
-        // Log that we received the result with the span context
-        info!(parent: &span, "Received map only result: {:?}", job_error);
 
         // Instrument the future to use the span for subsequent logs
         self.handle_error(job_error).instrument(span).await

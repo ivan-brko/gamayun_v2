@@ -2,7 +2,7 @@ use crate::notification::NotificationSender;
 use async_trait::async_trait;
 use reqwest::Client;
 use std::env;
-use tracing::instrument;
+use tracing::{error, instrument};
 
 /// Configuration struct for SendGrid.
 pub struct SendGridConfiguration {
@@ -62,7 +62,7 @@ impl NotificationSender for SendGridNotificationSender {
             .await;
 
         if let Err(e) = response {
-            eprintln!("Failed to send notification via SendGrid: {:?}", e);
+            error!("Failed to send notification via SendGrid: {:?}", e);
         }
     }
 }

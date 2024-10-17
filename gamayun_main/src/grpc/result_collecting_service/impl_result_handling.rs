@@ -27,7 +27,18 @@ impl ResultCollectingService {
     ) -> Result<Response<EmptyResponse>, Status> {
         // Extract job name and results
         let job_name = job_result.name;
+        let run_id = job_result.run_id;
         let results = job_result.results;
+
+        info!(
+            "Started processing results for job: {} and run id {}",
+            job_name, run_id
+        );
+
+        self.app_context
+            .background_job_completion_scheduler
+            .report_result_returned(&run_id)
+            .await;
 
         // Match the job config using the new function
         let job_config = self.match_job_config(&job_name)?;
@@ -63,7 +74,10 @@ impl ResultCollectingService {
             .await?;
         }
 
-        info!("Successfully processed all results for job: {}", job_name);
+        info!(
+            "Successfully processed all results for job: {} and run id {}",
+            job_name, run_id
+        );
         Ok(Response::new(EmptyResponse {}))
     }
 
