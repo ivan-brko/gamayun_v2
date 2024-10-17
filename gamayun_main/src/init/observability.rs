@@ -9,9 +9,9 @@ use tracing_opentelemetry::OpenTelemetryLayer;
 use tracing_subscriber::layer::{Layered, SubscriberExt};
 use tracing_subscriber::{fmt, EnvFilter, Registry};
 
-pub(crate) fn initialize_tracing_subscriber() {
+pub(crate) fn initialize_tracing_subscriber(app_version: String) {
     // Conditionally add the OpenTelemetry layer if it is initialized
-    if let Some(otel_layer) = construct_open_telemetry_layer() {
+    if let Some(otel_layer) = construct_open_telemetry_layer(app_version) {
         let subscriber = Registry::default()
             .with(EnvFilter::from_default_env())
             .with(otel_layer)
@@ -30,6 +30,7 @@ pub(crate) fn initialize_tracing_subscriber() {
 }
 
 fn construct_open_telemetry_layer(
+    app_version: String,
 ) -> Option<OpenTelemetryLayer<Layered<EnvFilter, Registry>, sdktrace::Tracer>> {
     // Read the OTEL_TRACES_ENDPOINT environment variable
     let otel_endpoint = env::var("OTEL_TRACES_ENDPOINT").ok()?;
@@ -43,10 +44,10 @@ fn construct_open_telemetry_layer(
         .tracing()
         .with_exporter(exporter)
         .with_trace_config(
-            sdktrace::Config::default().with_resource(Resource::new(vec![KeyValue::new(
-                "service.name",
-                "Gamayun",
-            )])),
+            sdktrace::Config::default().with_resource(Resource::new(vec![
+                KeyValue::new("service.name", "gamayun"),
+                KeyValue::new("service.version", app_version),
+            ])),
         )
         .install_batch(Tokio)
         .expect("Failed to install OpenTelemetry tracer.");

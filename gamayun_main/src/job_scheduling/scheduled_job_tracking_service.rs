@@ -56,10 +56,16 @@ impl ScheduledJobTrackingService {
                             notification_sender
                                 .notify(
                                     format!("Gamayun Overdue Job for {}", job_name),
-                                    format!("Job with name {} and  run ID {} is overdue.", job_name, run_id),
+                                    format!(
+                                        "Job with name {} and  run ID {} is overdue.",
+                                        job_name, run_id
+                                    ),
                                 )
                                 .await;
-                            error!("Error: Job with name {} and  run ID {} is overdue.", job_name, run_id);
+                            error!(
+                                "Error: Job with name {} and  run ID {} is overdue.",
+                                job_name, run_id
+                            );
                             jobs.remove(&run_id);
                         }
                     }

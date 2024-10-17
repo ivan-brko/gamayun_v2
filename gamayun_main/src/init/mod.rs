@@ -19,6 +19,8 @@ mod observability;
 /// scheduler, job configurations, and the notification sender.
 #[derive(Clone)]
 pub struct AppContext {
+    /// Application version
+    pub app_version: String,
     /// MongoDB client instance.
     pub mongo_client: Client,
     /// Background job completion scheduler.
@@ -35,14 +37,15 @@ pub struct AppContext {
 
 /// Initializes the first stage of the application.
 ///
-/// This stage sets up dotenv, observability, and initializes the notification sender.
+/// This stage sets up observability and initializes the notification sender.
 ///
 /// # Returns
 ///
 /// A `Result` containing the `CompositeNotificationSender` or an error if initialization fails.
 async fn init_notification_and_logging(
+    app_version: String,
 ) -> Result<CompositeNotificationSender, Box<dyn std::error::Error>> {
-    observability::initialize_tracing_subscriber();
+    observability::initialize_tracing_subscriber(app_version);
     info!("Initializing app");
 
     let notification_sender = notification_sender::initialize_notification_sender();
@@ -64,6 +67,7 @@ async fn init_notification_and_logging(
 /// A `Result` containing the `AppContext` or an error if initialization fails.
 async fn init_other_services(
     notification_sender: CompositeNotificationSender,
+    app_version: String,
 ) -> Result<AppContext, Box<dyn std::error::Error>> {
     // Initialize MongoDB client
     let (mongo_client, mongo_db_name) = mongo::initialize_mongo_client().await?;
@@ -86,6 +90,7 @@ async fn init_other_services(
 
     // Return the app context
     Ok(AppContext {
+        app_version,
         mongo_client,
         background_job_completion_scheduler,
         scheduler,
@@ -106,17 +111,22 @@ async fn init_other_services(
 /// An `AppContext` instance representing the initialized application context.
 pub async fn initialize() -> AppContext {
     dotenv::dotenv().ok();
-    match init_notification_and_logging().await {
-        Ok(notification_sender) => match init_other_services(notification_sender.clone()).await {
-            Ok(context) => context,
-            Err(e) => {
-                error!("Initialization failed: {}", e);
-                notification_sender
-                    .notify("Initialization failed".to_string(), e.to_string())
-                    .await;
-                panic!("Initialization failed: {}", e);
+    // Get the app version from the Cargo.toml file
+    let app_version = env!("CARGO_PKG_VERSION").to_string();
+
+    match init_notification_and_logging(app_version.clone()).await {
+        Ok(notification_sender) => {
+            match init_other_services(notification_sender.clone(), app_version).await {
+                Ok(context) => context,
+                Err(e) => {
+                    error!("Initialization failed: {}", e);
+                    notification_sender
+                        .notify("Initialization failed".to_string(), e.to_string())
+                        .await;
+                    panic!("Initialization failed: {}", e);
+                }
             }
-        },
+        }
         Err(e) => {
             error!("Initialization failed: {}", e);
             panic!("Initialization failed: {}", e);
