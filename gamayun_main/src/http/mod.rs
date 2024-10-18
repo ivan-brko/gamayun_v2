@@ -1,5 +1,6 @@
+use crate::http::routes::assemble_routes;
 use crate::init::AppContext;
-use actix_web::{post, web, App, HttpServer, Responder};
+use actix_web::{web, App, HttpServer};
 use anyhow::{Context, Result};
 use std::env;
 use std::net::ToSocketAddrs;
@@ -8,12 +9,8 @@ use tracing::info;
 use tracing_actix_web::TracingLogger;
 
 mod app_config_reload_handler;
-
-#[post("/jobs/config/reload")]
-async fn reload_job_config(app_context: web::Data<AppContext>) -> impl Responder {
-    info!("Received request to reload job configuration");
-    app_config_reload_handler::handle_jobs_config_reload_request(app_context).await
-}
+mod routes;
+mod version_retriever;
 
 pub async fn run_actix_server(
     app_context: AppContext,
@@ -39,7 +36,7 @@ pub async fn run_actix_server(
         App::new()
             .wrap(TracingLogger::default())
             .app_data(state.clone())
-            .service(reload_job_config)
+            .service(assemble_routes())
     })
     .bind(addr)
     .context("Failed to bind Actix Web server")?;
