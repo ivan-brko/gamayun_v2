@@ -35,7 +35,7 @@ impl ScheduledJobTrackingService {
         let jobs_clone = service.jobs.clone();
         scheduler
             .schedule_sequential_job(
-                "*/10 * * * *", // run the job every 10 minutes
+                "1 */10 * * * *", // run the job every 10 minutes
                 Some("Overdue Job Checker".to_string()),
                 None,
                 Some(Duration::seconds(2)),

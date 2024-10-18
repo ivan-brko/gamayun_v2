@@ -1,3 +1,4 @@
+pub mod config_reload;
 pub mod scheduled_job_tracking_service;
 
 use crate::config::job_config::JobConfig;
@@ -112,24 +113,6 @@ async fn run_single_job(
                         chrono::Duration::milliseconds(result_wait_timeout_millis),
                     )
                     .await;
-
-                // todo: we can use the lower part later to somehow async wait for
-                // the process to complete and use that information to know when to
-                // stop waiting for the results of the job
-
-                // Optionally wait for the process to complete
-                // match child.wait() {
-                //     Ok(status) => {
-                //         if status.success() {
-                //             info!("Job {} finished successfully", &job_name);
-                //         } else {
-                //             info!("Job {} finished with status {}", &job_name, status);
-                //         }
-                //     }
-                //     Err(e) => {
-                //         info!("Failed to wait for job {}: {:?}", job_name, e);
-                //     }
-                // }
             }
             Err(e) => {
                 error!("Failed to start job {}: {:?}", job_name, e);

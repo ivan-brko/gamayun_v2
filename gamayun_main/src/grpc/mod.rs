@@ -10,8 +10,8 @@ use tracing::info;
 mod result_collecting_service;
 
 pub async fn run_grpc_server(
-    shutdown_token: CancellationToken,
     app_context: AppContext,
+    shutdown_token: CancellationToken,
 ) -> Result<()> {
     // Read gRPC address from environment variable or use default
     let addr = env::var("GAMAYUN_GRPC_ADDR")

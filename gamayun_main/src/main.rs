@@ -17,11 +17,11 @@ mod notification;
 async fn main() -> Result<()> {
     let app_context = init::initialize().await;
 
-    info!("Starting the web server");
+    info!("Starting the web server and gRPC server...");
 
-    let (shutdown_token, shutdown_future) = create_canceled_token();
-    let http_server_future = run_actix_server(shutdown_token.clone());
-    let grpc_server_future = run_grpc_server(shutdown_token.clone(), app_context.clone());
+    let (shutdown_token, shutdown_future) = create_cancellation_token();
+    let http_server_future = run_actix_server(app_context.clone(), shutdown_token.clone());
+    let grpc_server_future = run_grpc_server(app_context.clone(), shutdown_token.clone());
 
     // Run all futures concurrently
     tokio::select! {
@@ -43,7 +43,7 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-fn create_canceled_token() -> (CancellationToken, impl Future<Output = ()> + Sized) {
+fn create_cancellation_token() -> (CancellationToken, impl Future<Output = ()> + Sized) {
     let shutdown_token = CancellationToken::new();
     let cloned_token = shutdown_token.clone();
 

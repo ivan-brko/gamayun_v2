@@ -1,4 +1,5 @@
-use actix_web::{get, web, App, HttpServer, Responder};
+use crate::init::AppContext;
+use actix_web::{post, web, App, HttpServer, Responder};
 use anyhow::{Context, Result};
 use std::env;
 use std::net::ToSocketAddrs;
@@ -6,14 +7,18 @@ use tokio_util::sync::CancellationToken;
 use tracing::info;
 use tracing_actix_web::TracingLogger;
 
-mod request_handling_logic;
+mod app_config_reload_handler;
 
-#[get("/hello/{name}")]
-async fn greet(name: web::Path<String>) -> impl Responder {
-    request_handling_logic::inner_greet(&name).await
+#[post("/jobs/config/reload")]
+async fn reload_job_config(app_context: web::Data<AppContext>) -> impl Responder {
+    info!("Received request to reload job configuration");
+    app_config_reload_handler::handle_jobs_config_reload_request(app_context).await
 }
 
-pub async fn run_actix_server(shutdown_token: CancellationToken) -> Result<()> {
+pub async fn run_actix_server(
+    app_context: AppContext,
+    shutdown_token: CancellationToken,
+) -> Result<()> {
     let host = env::var("GAMAYUN_HTTP_HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
     let port = env::var("GAMAYUN_HTTP_PORT")
         .unwrap_or_else(|_| "8080".to_string())
@@ -28,9 +33,16 @@ pub async fn run_actix_server(shutdown_token: CancellationToken) -> Result<()> {
 
     info!("Starting Actix Web server on {}:{}", host, port);
 
-    let server = HttpServer::new(|| App::new().wrap(TracingLogger::default()).service(greet))
-        .bind(addr)
-        .context("Failed to bind Actix Web server")?;
+    let state = web::Data::new(app_context);
+
+    let server = HttpServer::new(move || {
+        App::new()
+            .wrap(TracingLogger::default())
+            .app_data(state.clone())
+            .service(reload_job_config)
+    })
+    .bind(addr)
+    .context("Failed to bind Actix Web server")?;
 
     let server_handle = server.run();
 
