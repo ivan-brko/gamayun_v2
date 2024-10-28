@@ -3,7 +3,7 @@ use crate::grpc::result_collecting_service::ResultCollectingService;
 
 use mongodb::bson::{doc, Bson, DateTime as BsonDateTime, Document};
 use mongodb::{error::Error as MongoError, Collection};
-use protos::gamayun::{EmptyResponse, JobResult, MapResult};
+use protos::gamayun::{EmptyResponse, MapResult, RunInformation};
 use std::collections::HashMap;
 use tonic::{Response, Status};
 use tracing::{error, info, instrument};
@@ -14,7 +14,8 @@ impl ResultCollectingService {
     ///
     /// # Arguments
     ///
-    /// * `job_result` - The job result containing the name and a list of map results.
+    /// * `results` - The job result containing a list of map results.
+    /// * `run_information` - Information about the job that produced the results.
     ///
     /// # Returns
     ///
@@ -23,12 +24,12 @@ impl ResultCollectingService {
     #[instrument(skip(self))]
     pub async fn handle_result(
         &self,
-        job_result: JobResult,
+        results: Vec<MapResult>,
+        run_information: RunInformation,
     ) -> Result<Response<EmptyResponse>, Status> {
         // Extract job name and results
-        let job_name = job_result.name;
-        let run_id = job_result.run_id;
-        let results = job_result.results;
+        let job_name = run_information.job_name;
+        let run_id = run_information.run_id;
 
         info!(
             "Started processing results for job: {} and run id {}",

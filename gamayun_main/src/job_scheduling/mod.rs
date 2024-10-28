@@ -98,12 +98,13 @@ async fn run_single_job(
     async move {
         info!("Executing job");
 
-        //add the unique id as the last argument
-        let mut arguments = arguments;
-        arguments.push(unique_id.clone());
-
         // Start the OS task
-        match Command::new(&path_to_executable).args(arguments).spawn() {
+        match Command::new(&path_to_executable)
+            .env("GAMAYUN_JOB_NAME", &job_name)
+            .env("GAMAYUN_JOB_UNIQUE_ID", &unique_id)
+            .args(arguments)
+            .spawn()
+        {
             Ok(child) => {
                 info!("Job {} started with PID {}", &job_name, child.id());
                 scheduled_job_tracking_service

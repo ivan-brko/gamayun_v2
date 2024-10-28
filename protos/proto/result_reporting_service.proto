@@ -6,6 +6,8 @@ package gamayun;
 service ResultReportingService{
   // Reports the result to Gamayun
   rpc ReportResult (JobResult) returns (EmptyResponse) {}
+  // Reports no results for a script to Gamayun
+  rpc ReportNoResult (RunInformation) returns (EmptyResponse) {}
   // Reports an error to Gamayun
   rpc ReportError (JobError) returns (EmptyResponse) {}
 }
@@ -15,17 +17,20 @@ message MapResult{
   map<string, string> mapResult = 1;
 }
 
+message RunInformation {
+  string runId = 1;
+  string jobName = 2;
+}
+
 // Result containing jobName and map-only results
 message JobResult {
-  string name = 1;
-  string runId = 2;
+  RunInformation runInformation = 1;
   repeated MapResult results = 3;
 }
 
 message JobError {
-  string name = 1;
-  string runId = 2;
-  string error = 3;
+  RunInformation runInformation = 1;
+  string error = 2;
 }
 
 // The empty response
