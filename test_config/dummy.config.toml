@@ -1,0 +1,13 @@
+# Job Configuration Example
+
+name = "example_job"
+path_to_executable = "python3"
+
+# Arguments to be passed to the executable
+arguments = ["${CONFIGURATION_FILE_DIRECTORY}/runner.py"]
+
+# Cron schedule for the job (runs every minute)
+cron_string = "1 * * * * *"
+
+# Tags associated with the job
+tags = ["test"]

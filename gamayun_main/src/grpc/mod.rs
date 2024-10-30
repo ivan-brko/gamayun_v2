@@ -15,7 +15,7 @@ pub async fn run_grpc_server(
 ) -> Result<()> {
     // Read gRPC address from environment variable or use default
     let addr = env::var("GAMAYUN_GRPC_ADDR")
-        .unwrap_or_else(|_| "[::1]:50051".to_string())
+        .unwrap_or_else(|_| "[::1]:16656".to_string())
         .parse()
         .context("Failed to parse GAMAYUN_GRPC_ADDR")?;
 

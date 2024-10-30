@@ -3,6 +3,7 @@ use serde::Deserialize;
 use std::fs;
 use std::io::Read;
 use std::path::Path;
+use tracing::info;
 
 #[derive(Debug, Deserialize, Clone)]
 pub enum OnDuplicateEntry {
@@ -53,6 +54,15 @@ impl JobConfig {
     pub fn load_configs_from_directory(root_path: &str) -> Result<Vec<JobConfig>> {
         let configs = Self::recursive_load(Path::new(root_path))?;
 
+        info!(
+            "Loaded the following job configurations: {}",
+            configs
+                .iter()
+                .map(|c| c.name.clone())
+                .collect::<Vec<String>>()
+                .join(", ")
+        );
+
         Ok(configs)
     }
 
@@ -81,13 +91,35 @@ impl JobConfig {
     }
 
     pub fn from_file(path: &str) -> Result<Self> {
+        let path = Path::new(path);
+
+        // Ensure the path exists and is a file
+        if !path.is_file() {
+            return Err(anyhow::anyhow!(
+                "The path '{}' is not a valid file.",
+                path.display()
+            ));
+        }
+
+        // Read the file contents
         let mut file = fs::File::open(path)?;
         let mut contents = String::new();
         file.read_to_string(&mut contents)?;
 
-        // Replace ${CONFIGURATION_FILE_PATH} with the actual path
-        let contents = contents.replace("${CONFIGURATION_FILE_PATH}", path);
+        // Get the parent directory of the file
+        let parent_dir = path
+            .parent()
+            .ok_or_else(|| {
+                anyhow::anyhow!("Failed to get the parent directory of '{}'", path.display())
+            })?
+            .to_str()
+            .ok_or_else(|| anyhow::anyhow!("Parent directory path is not valid UTF-8"))?
+            .to_string();
 
+        // Replace the placeholder with the parent directory
+        let contents = contents.replace("${CONFIGURATION_FILE_DIRECTORY}", &parent_dir);
+
+        // Parse the TOML configuration
         let config: JobConfig = toml::from_str(&contents)?;
         Ok(config)
     }

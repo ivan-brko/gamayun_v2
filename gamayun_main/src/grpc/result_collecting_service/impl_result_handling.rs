@@ -8,6 +8,9 @@ use std::collections::HashMap;
 use tonic::{Response, Status};
 use tracing::{error, info, instrument};
 
+const CREATED_AT_FIELD: &str = "gamayun_created_at";
+const UPTADED_AT_FIELD: &str = "gamayun_updated_at";
+
 impl ResultCollectingService {
     /// Processes results for a job that contains map-only data and handles storing them
     /// in MongoDB based on the duplicate entry policy of the job.
@@ -118,8 +121,8 @@ impl ResultCollectingService {
             });
 
         // Add created_at, updated_at, and tags fields
-        doc.insert("gamayun_created_at", current_time);
-        doc.insert("gamayun_updated_at", current_time);
+        doc.insert(CREATED_AT_FIELD, current_time);
+        doc.insert(CREATED_AT_FIELD, current_time);
         doc.insert(
             "gamayun_tags",
             Bson::Array(tags.iter().map(|tag| Bson::String(tag.clone())).collect()),
@@ -207,7 +210,7 @@ impl ResultCollectingService {
             // Update `gamayun_updated_at` field only
             let current_time = BsonDateTime::now();
             let update = doc! {
-                "$set": { "gamayun_updated_at": current_time }
+                "$set": { UPTADED_AT_FIELD: current_time }
             };
             collection.update_one(filter, update).await?;
             info!(
@@ -241,8 +244,8 @@ impl ResultCollectingService {
     ) -> Result<(), MongoError> {
         // Find existing document and keep its `gamayun_created_at`
         if let Some(existing_doc) = collection.find_one(filter.clone()).await? {
-            if let Some(gamayun_created_at) = existing_doc.get("gamayun_created_at").cloned() {
-                doc.insert("gamayun_created_at", gamayun_created_at);
+            if let Some(gamayun_created_at) = existing_doc.get(CREATED_AT_FIELD).cloned() {
+                doc.insert(CREATED_AT_FIELD, gamayun_created_at);
             }
         }
 
@@ -277,7 +280,11 @@ impl ResultCollectingService {
         filter: Document,
     ) -> Result<(), MongoError> {
         // Find the latest document matching the filter
-        if let Some(existing_doc) = collection.find_one(filter.clone()).await? {
+        if let Some(existing_doc) = collection
+            .find_one(filter.clone())
+            .sort(doc! { CREATED_AT_FIELD: -1 })
+            .await?
+        {
             // Calculate the changed fields
             let mut changed_fields = Document::new();
             for (key, new_value) in &doc {
@@ -294,8 +301,8 @@ impl ResultCollectingService {
 
             // Add timestamps to changed document
             let current_time = BsonDateTime::now();
-            changed_fields.insert("gamayun_created_at", current_time);
-            changed_fields.insert("gamayun_updated_at", current_time);
+            changed_fields.insert(CREATED_AT_FIELD, current_time);
+            changed_fields.insert(UPTADED_AT_FIELD, current_time);
 
             // Insert only the changed fields
             collection.insert_one(changed_fields).await?;
