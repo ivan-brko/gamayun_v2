@@ -1,6 +1,6 @@
 use crate::grpc::result_collecting_service::ResultCollectingService;
 use crate::notification::NotificationSender;
-use protos::gamayun::{EmptyResponse, JobError, RunInformation};
+use protos::gamayun::{EmptyResponse, RunInformation};
 use tonic::{Response, Status};
 use tracing::{error, instrument};
 
