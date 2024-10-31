@@ -1,5 +1,5 @@
 pub(crate) mod composite_notification_sender;
-mod mail;
+pub(crate) mod mail;
 
 use async_trait::async_trait;
 

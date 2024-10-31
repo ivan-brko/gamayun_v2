@@ -2,7 +2,7 @@ use crate::grpc::result_collecting_service::ResultCollectingService;
 use crate::notification::NotificationSender;
 use protos::gamayun::{EmptyResponse, RunInformation};
 use tonic::{Response, Status};
-use tracing::{error, instrument};
+use tracing::{instrument, warn};
 
 impl ResultCollectingService {
     /// Handles an error that occurred during a job's execution.
@@ -23,7 +23,7 @@ impl ResultCollectingService {
         run_information: RunInformation,
     ) -> Result<Response<EmptyResponse>, Status> {
         // Log the error
-        error!("Received job error: {:?}", error);
+        warn!("Received job error: {:?}", error);
 
         let run_id = run_information.run_id.clone();
 

@@ -20,6 +20,7 @@ pub(crate) async fn handle_config_reload_request(app_context: AppContext) -> Res
     schedule_jobs_from_config(
         app_context.scheduler.clone(),
         app_context.background_job_completion_scheduler.clone(),
+        app_context.config_root.clone(),
     )
     .map_err(|e| format!("Failed to schedule jobs from config: {:?}", e))?;
 

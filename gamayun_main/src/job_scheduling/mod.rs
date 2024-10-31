@@ -8,7 +8,6 @@ use anyhow::{Context, Result};
 use chrono::Utc;
 use grizzly_scheduler::scheduler::Scheduler;
 use mongodb::bson::uuid;
-use std::env;
 use std::process::Command;
 use tracing::{error, info};
 use tracing_futures::Instrument;
@@ -25,10 +24,8 @@ pub fn start_background_job_reporting_check(
 pub fn schedule_jobs_from_config(
     scheduler: Scheduler<Utc>,
     scheduled_job_tracking_service: ScheduledJobTrackingService,
+    config_root: String,
 ) -> Result<Vec<JobConfig>> {
-    let config_root = env::var("GAMAYUN_CONFIGURATION_ROOT")
-        .context("GAMAYUN_CONFIGURATION_ROOT environment variable is not set")?;
-
     let job_configs = JobConfig::load_configs_from_directory(&config_root)
         .context("Failed to load job configurations")?;
 

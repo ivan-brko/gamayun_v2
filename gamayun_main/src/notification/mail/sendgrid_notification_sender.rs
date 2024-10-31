@@ -1,20 +1,19 @@
 use crate::notification::NotificationSender;
 use async_trait::async_trait;
 use reqwest::Client;
-use std::env;
-use tracing::{error, instrument};
+use tracing::{error, info, instrument};
 
 /// Configuration struct for SendGrid.
 pub struct SendGridConfiguration {
     pub from_email: String,
     pub to_emails: Vec<String>,
+    pub api_key: String,
 }
 
 /// Implementation of `NotificationSender` for SendGrid.
 pub struct SendGridNotificationSender {
     config: SendGridConfiguration,
     client: Client,
-    api_key: String,
 }
 
 impl SendGridNotificationSender {
@@ -24,12 +23,9 @@ impl SendGridNotificationSender {
     ///
     /// * `config` - A `SendGridConfiguration` containing the "from" email and recipient emails.
     pub fn new(config: SendGridConfiguration) -> Self {
-        let api_key =
-            env::var("GAMAYUN_SENDGRID_API_KEY").expect("GAMAYUN_SENDGRID_API_KEY not set");
         SendGridNotificationSender {
             config,
             client: Client::new(),
-            api_key,
         }
     }
 }
@@ -38,6 +34,10 @@ impl SendGridNotificationSender {
 impl NotificationSender for SendGridNotificationSender {
     #[instrument(skip(self, message_contents))]
     async fn notify(&self, message_title: String, message_contents: String) {
+        info!(
+            "Sending notification via SendGrid with title {}",
+            &message_title
+        );
         let url = "https://api.sendgrid.com/v3/mail/send";
 
         let body = serde_json::json!({
@@ -55,7 +55,7 @@ impl NotificationSender for SendGridNotificationSender {
         let response = self
             .client
             .post(url)
-            .header("Authorization", format!("Bearer {}", self.api_key))
+            .header("Authorization", format!("Bearer {}", self.config.api_key))
             .header("Content-Type", "application/json")
             .json(&body)
             .send()
